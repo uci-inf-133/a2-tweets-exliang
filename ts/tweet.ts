@@ -39,15 +39,23 @@ class Tweet {
     //returns a boolean, whether the text includes any content written by the person tweeting.
     get written():boolean {
         //TODO: identify whether the tweet is written
-        return false;
+        // ends with "Check it out!" or an auto hashtag #RunKeeper #RKLive #RKPodcast #FitnessAlerts #RunkeeperLive #RunKeeperApp
+        this.text = this.text.replace(/https?:\/\/\S+/g, ''); //removes URLs
+		this.text = this.text.replace(/#Runkeeper/g, ''); //removes #Runkeeper
+        if (this.text.includes("Check it out!") || this.text.includes("#RunKeeper") || this.text.includes("#RKLive") || this.text.includes("#RKPodcast") || this.text.includes("#FitnessAlerts") || this.text.includes("#RunkeeperLive") || this.text.includes("#RunKeeperApp")) {
+            return false;
+        }
+        return true;
     }
 
     get writtenText():string {
         if(!this.written) {
             return "";
         }
-        //TODO: parse the written text from the tweet
-        return "";
+        //TODO: parse the written text from the tweet 
+        //after the "-" is user written text
+        var written_text = this.text.split(" - ")[1];
+        return written_text;
     }
 
     get activityType():string {

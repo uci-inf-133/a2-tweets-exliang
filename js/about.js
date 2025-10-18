@@ -44,17 +44,25 @@ function parseTweets(runkeeper_tweets) { //runkeeper_tweets = arr of raw tweet o
 		}
 	}
 	document.querySelector('.liveEvents').innerText = live_count;
-	document.querySelector('.completedEvents').innerText = completed_count;
+	document.querySelectorAll('.completedEvents')[0].innerText = completed_count;
+	document.querySelectorAll('.completedEvents')[1].innerText = completed_count;
 	document.querySelector('.achievements').innerText = goal_count;
 	document.querySelector('.miscellaneous').innerText = miscellaneous_count;
-
 	document.querySelector('.liveEventsPct').innerText = (live_count/tweet_array.length*100).toFixed(2) + '%';
 	document.querySelector('.completedEventsPct').innerText = (completed_count/tweet_array.length*100).toFixed(2) + '%';
 	document.querySelector('.achievementsPct').innerText = (goal_count/tweet_array.length*100).toFixed(2) + '%';
 	document.querySelector('.miscellaneousPct').innerText = (miscellaneous_count/tweet_array.length*100).toFixed(2) + '%';
 
 	// Part 1: User-Written Tweets
-	
+	let written_count = 0;
+	for(let i = 0; i < tweet_array.length; i++) {
+		if (tweet_array[i].written) {
+			console.log(tweet_array[i].writtenText);
+			written_count++;
+		}
+	}
+	document.querySelector('.written').innerText = written_count;
+	document.querySelector('.writtenPct').innerText = (written_count/tweet_array.length*100).toFixed(2) + '%';
 }
 
 //Wait for the DOM to load (calls loadSavedRunkeeperTweets and then parseTweets)
@@ -72,4 +80,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
 // 	if (tweet_array[i].text.includes("goal") || tweet_array[i].text.includes("Goal")) {
 // 		console.log(tweet_array[i].text);
 // 	}
+// }
+
+// //TESTING for Part 1: User-Written Tweets
+// for(let i = 0; i < 8247; i++) {
+// 	tweet_array[i].text = tweet_array[i].text.replace(/https?:\/\/\S+/g, ''); //removes URLs
+// 	tweet_array[i].text = tweet_array[i].text.replace(/#Runkeeper/g, ''); //removes #Runkeeper
+// 	console.log(tweet_array[i].text);
 // }
