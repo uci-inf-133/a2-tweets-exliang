@@ -10,7 +10,30 @@ class Tweet {
 	//returns either 'live_event', 'achievement', 'completed_event', or 'miscellaneous'
     get source():string {
         //TODO: identify whether the source is a live event, an achievement, a completed event, or miscellaneous.
-        return "unknown";
+
+        /* Part 1: Tweet Categories
+        Live = person tweets while they're currently doing the acitivty ("#RKLive")
+        
+        Achievement = person indicates an achivement they reached or a goal they set ("goal" or "Goal")
+        - Just completed a 8.65 mi run - Goal was 9. Oh well
+        - I just set a goal on #Runkeeper!
+
+        Completed = person tweets acitvity they recently finished ("completed")
+
+        Miscellaneous = anything that didn't involve posting abt an activity
+        */
+        if (this.text.includes("#RKLive")) {
+            return "live_event";
+        }
+        else if (this.text.includes("goal") || this.text.includes("Goal")) {
+            return "achievement";
+        }
+        else if (this.text.includes("completed") || this.text.includes("posted")) {
+            return "completed_event";
+        }
+        else {
+            return "miscellaneous";
+        }
     }
 
     //returns a boolean, whether the text includes any content written by the person tweeting.
