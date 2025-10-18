@@ -23,9 +23,37 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
+
+
+	//TESTING for Part 2: Determining activity type and distance
+	// for(let i = 0; i < 100; i++) {
+	// 	console.log(tweet_array[i].text);
+	// }
+
+	//get the type of physical activity 
+	// for(let i = 0; i < 100; i++) { //km or mi
+	// 	console.log(tweet_array[i].text + " & " + tweet_array[i].activityType.toUpperCase());
+	// }
+
+	/*edge cases:
+	- Just posted a MySports Freestyle in 1:01:28  - TomTom MySports Watch https://t.co/tv6pKRfYRo #Runkeeper & JUST
+	- Just posted a spinning workout in 1:00:00  with @Runkeeper. Check it out! https://t.co/BxDNWVU2rr #Runkeeper & JUST
+	*/
+
 }
 
 //Wait for the DOM to load
 document.addEventListener('DOMContentLoaded', function (event) {
 	loadSavedRunkeeperTweets().then(parseTweets);
 });
+
+
+//Part 2: determining distance
+// for(let i = 0; i < 100; i++) { //distance
+// 	if (tweet_array[i].text.includes("completed")){ // || tweet_array[i].text.includes("posted")
+// 		console.log(tweet_array[i].text + " & " + tweet_array[i].distance);
+// 	}
+// 	if (tweet_array[i].text.includes("posted") && (tweet_array[i].text.includes("km") || tweet_array[i].text.includes("mi"))){ // || tweet_array[i].text.includes("posted")
+// 		console.log(tweet_array[i].text + " & " + tweet_array[i].distance);
+// 	}
+// }
