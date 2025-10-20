@@ -57,27 +57,29 @@ class Tweet {
         return written_text;
     }
 
-    get activityType():string { //FIX
+    get activityType():string { //FIX: should change this to use regex to simplify
         if (this.source != 'completed_event') {
             return "unknown";
         }
-        //TODO: parse the activity type (running, skiing, biking, etc) from the text of the tweet
-        var words_list = this.text.split(" ")
-        var start_idx;
-        if (words_list.includes("km")) {
-            start_idx = words_list.indexOf("km");
+        //TODO: parse the activity type (running, skiing, biking, etc) from the text of the tweet for completed events only
+        var activity_type = "";
+        // Distance-based activities
+        const distance_regex = /(?:completed|posted) a [\d.]+ (?:km|mi) (\w+)/i;
+        const distance_match = this.text.match(distance_regex);
+        if (distance_match) {
+            activity_type = distance_match[1].toLowerCase(); // capture the activity
+            return activity_type;
         }
-        else {
-            start_idx = words_list.indexOf("mi");
-        }
-        var activity = words_list[start_idx + 1]; //activity is the word after the distance unit
-        return activity;
-  
-        
-        //end idxs
-        // const with_idx = this.text.indexOf(" with");
-        // const dash_idx = this.text.indexOf(" -");
 
+        // Time-based activities
+        const time_regex = /(?:completed|posted) (?:an|a) ([\w\s]+?) in /i;
+        const time_match = this.text.match(time_regex);
+        if (time_match) {
+            activity_type = time_match[1].trim().toLowerCase();
+            return activity_type;
+        }
+
+        return activity_type;
     }
 
     get distance():number {
@@ -85,26 +87,20 @@ class Tweet {
             return 0;
         }
         //TODO: parse the distance (convert all to mi) from the text of the tweet (for completed tweets only)
-        if (this.text.includes("completed")){ //all completed tweets hv a distance in km or mi
-            var words = this.text.split(" ")
-            if (words[4] == "km") {
-                return parseFloat(words[3]) * 0.62150404; //convert km to mi
-            }
-            else if (words[4] == "mi") {
-                return parseFloat(words[3]);
-            }
-
-        }
-        else if (this.text.includes("posted")){
-            var words = this.text.split(" ")
-            if (words[4] == "km") {
-                return parseFloat(words[3]) * 0.62150404; //convert km to mi
-            }
-            else if (words[4] == "mi") {
-                return parseFloat(words[3]);
+        if ((this.text.includes("completed") || this.text.includes("posted"))
+            && (this.text.includes(" km ") || this.text.includes(" mi "))){ //all completed tweets hv a distance in km or mi
+            const regex = /(?:posted|completed) a (\d+(\.\d+)?) (km|mi)/i; //start: "posted a" or "completed a", end: "km" or "mi"
+            const match = this.text.match(regex);
+            if (match) {
+                let distance = parseFloat(match[1]); // captured number
+                let unit = match[3]; // "km" or "mi"
+                if (unit === "km") { // convert to miles if needed
+                    distance *= 0.62150404;
+                } 
+                return distance;
             }
         }
-        return 0; //default
+        return -1; //default for time based acitivities (shouldn't hit)
     }
 
     getHTMLTableRow(rowNumber:number):string {
@@ -112,3 +108,36 @@ class Tweet {
         return "<tr></tr>";
     }
 }
+
+//Old activityType code:
+// var start_idx = -1, end_idx = -1;
+
+// //time activities: get start & end idxs - either "a" or "an" for start & "in" for end
+// if (!this.text.includes(" km ") && !this.text.includes(" mi ")) {
+//     const a_idx = this.text.indexOf(" a ");
+//     const an_idx = this.text.indexOf(" an ");
+//     start_idx = (a_idx !== -1) ? a_idx+3 : an_idx+3;
+//     end_idx = this.text.indexOf(" in "); 
+// }
+
+// //distance activites: get start & end idxs - idx right after "km" or "mi" for start & "with" or "-" for end
+// else if (this.text.includes(" km ") || this.text.includes(" mi ")) {
+//     const km_idx = this.text.indexOf(" km ");
+//     const mi_idx = this.text.indexOf(" mi ");
+//     start_idx = (km_idx !== -1) ? km_idx+4 : mi_idx+4; //FIX: this +4 might be hardcoded
+//     const with_idx = this.text.indexOf(" with ");
+//     const dash_idx = this.text.indexOf(" - "); //TODO: this not fully working sometimes
+//     end_idx = (dash_idx !== -1) ? dash_idx : with_idx;  //check for dash first since it's less common than with
+// }
+
+// var activity_type = "";
+// if (start_idx !== -1 && end_idx !== -1) { //slice activity type from text
+//     if (!this.text.includes(" km ") && !this.text.includes(" mi ")) { //not km & mi activity
+//         activity_type = this.text.slice(start_idx, end_idx).trim()
+//     }
+//     else if (this.text.includes(" km ") || this.text.includes(" mi ")) { //km & mi activity
+//         activity_type = this.text.slice(start_idx, end_idx).trim()
+//     }
+// }
+
+// return activity_type;
