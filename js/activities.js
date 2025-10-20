@@ -73,24 +73,34 @@ function parseTweets(runkeeper_tweets) {
 
 	//Part 2: Graphing activities by distance
 	//TODO: create a new array or manipulate tweet_array to create a graph of the number of tweets containing each type of activity.
+	
+	console.log(sorted_activities) //FIX: eliptical & eliptical workout listed - need to combine!!!!!
+	var activity_data = Object.entries(sorted_activities).map(([type, count]) => {
+  		return { activity_type: type, count: count };
+	});
+	console.log(activity_data)
 
 	activity_vis_spec = { //TODO: Add mark and encoding
 		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
 		"description": "A graph of the number of Tweets containing each type of activity.",
-		"data": {
-			"values": tweet_array
-		},
-		"mark": "tick",
+		"data": { "values": activity_data},
+		"mark": "bar",
 		"encoding": {
 			"x": {
-				"field": "activity",
-				"type": "quantitative",
+				"field": "activity_type",
+				"type": "nominal",
 				"title": "Activity Type"
 			},
 			"y": {
 				"field": "count",
 				"type": "quantitative",
-				"title": "Count"
+				"title": "Activity Count",
+				"scale": { "type": "linear" }, 
+			},
+			"color": { 
+				"field": "activity_type",
+				"type": "nominal",
+				"legend": null
 			}
 		},
 	};
