@@ -33,12 +33,12 @@ function parseTweets(runkeeper_tweets) { //runkeeper_tweets = arr of raw tweet o
 	//Part 1: Tweet Categories
 	let live_count = 0, completed_count = 0, goal_count = 0, miscellaneous_count = 0;
 	for(let i = 0; i < tweet_array.length; i++) {
-		if (tweet_array[i].text.includes("completed") || tweet_array[i].text.includes("posted")) {
-			completed_count++;
-		} else if (tweet_array[i].text.includes("#RKLive")) {
+		if (tweet_array[i].text.includes("#RKLive")) {
 			live_count++;
 		} else if (tweet_array[i].text.includes("goal") || tweet_array[i].text.includes("Goal")) {
 			goal_count++;
+		} else if (tweet_array[i].text.includes("completed") || tweet_array[i].text.includes("posted")) {
+			completed_count++;
 		} else {
 			miscellaneous_count++;
 		}

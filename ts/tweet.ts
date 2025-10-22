@@ -57,26 +57,91 @@ class Tweet {
         return written_text;
     }
 
-    get activityType():string { //FIX: should change this to use regex to simplify
+    get activityType():string {
         if (this.source != 'completed_event') {
             return "unknown";
         }
         //TODO: parse the activity type (running, skiing, biking, etc) from the text of the tweet for completed events only
-        var activity_type = "";
-        // Distance-based activities
-        const distance_regex = /(?:completed|posted) a [\d.]+ (?:km|mi) (\w+)/i;
+        // var activity_type = "";
+        // // Distance-based activities
+        // const distance_regex = /(?:completed|posted) a [\d.]+ (?:km|mi) (\w+)/i;
+        // const distance_match = this.text.match(distance_regex);
+        // if (distance_match) {
+        //     activity_type = distance_match[1].toLowerCase(); // capture the activity
+        //     return activity_type;
+        // }
+
+        // // Time-based activities
+        // const time_regex = /(?:completed|posted) (?:an|a) ([\w\s]+?) in /i;
+        // const time_match = this.text.match(time_regex);
+        // if (time_match) {
+        //     activity_type = time_match[1].trim().toLowerCase();
+        //     return activity_type;
+        // }
+
+        // return activity_type;
+        let activity_type = "";
+
+        // Match distance-based activities like "completed a 5 km run"
+        const distance_regex = /(?:completed|posted)\s+(?:an|a)?\s*[\d.]+\s*(?:km|mi)\s+([a-zA-Z]+)/i;
         const distance_match = this.text.match(distance_regex);
+
         if (distance_match) {
-            activity_type = distance_match[1].toLowerCase(); // capture the activity
-            return activity_type;
+            activity_type = distance_match[1].toLowerCase();
+        } else {
+            // Match time-based activities like "completed an elliptical workout in 30 minutes"
+            const time_regex = /(?:completed|posted)\s+(?:an|a)?\s*([\w\s®/]+?)(?:\s+(?:workout|session|activity|practice|exercise))?\s+(?:in|for)/i;
+            const time_match = this.text.match(time_regex);
+            if (time_match) {
+                activity_type = time_match[1].trim().toLowerCase();
+            }
         }
 
-        // Time-based activities
-        const time_regex = /(?:completed|posted) (?:an|a) ([\w\s]+?) in /i;
-        const time_match = this.text.match(time_regex);
-        if (time_match) {
-            activity_type = time_match[1].trim().toLowerCase();
-            return activity_type;
+        // --- Normalization and cleaning ---
+
+        // Remove filler suffixes (workout, session, activity, practice, exercise)
+        activity_type = activity_type.replace(/\b(workout|session|activity|practice|exercise)\b/g, "").trim();
+
+        // Replace multiple spaces with one
+        activity_type = activity_type
+            .replace(/[®&]/g, "")          // remove symbols
+            .replace(/\s*\/\s*/g, " ")     // replace slashes with space
+            .replace(/\b(workout|session|activity|practice|exercise)\b/g, "")
+            .replace(/\s{2,}/g, " ")
+            .trim();
+
+        // Normalize specific known phrases and typos
+        const corrections: Record<string, string> = {
+            "elliptical": "elliptical workout",
+            "mysports freestyle": "mysports freestyle",
+            "mysports": "mysports freestyle", //for mysports freestyle which counts as both time & distance activities
+            "mysports gym": "mysports gym",
+            "mtn": "mtn bike",
+            "chair": "chair ride",
+            "barre": "barre",
+            "circuit": "circuit workout",
+            "spinning": "spinning workout",
+            "bootcamp": "bootcamp",
+            "yoga": "yoga",
+            "pilates": "pilates session",
+            "strength": "strength workout",
+            "core": "core workout",
+            "row": "row",
+            "run": "run",
+            "walk": "walk",
+            "bike": "bike",
+            "hike": "hike",
+            "crossfit": "crossfit workout",
+            "stairmaster stepwell": "stairmaster/stepwell",
+            "boxing mma": "boxing/mma",
+            "group": "group workout",
+            "nordic": "nordic walk",
+            "ski": "ski run",
+        };
+
+        // Apply correction if exists
+        if (corrections[activity_type]) {
+            activity_type = corrections[activity_type];
         }
 
         return activity_type;
@@ -124,7 +189,7 @@ class Tweet {
 // else if (this.text.includes(" km ") || this.text.includes(" mi ")) {
 //     const km_idx = this.text.indexOf(" km ");
 //     const mi_idx = this.text.indexOf(" mi ");
-//     start_idx = (km_idx !== -1) ? km_idx+4 : mi_idx+4; //FIX: this +4 might be hardcoded
+//     start_idx = (km_idx !== -1) ? km_idx+4 : mi_idx+4; //this +4 might be hardcoded
 //     const with_idx = this.text.indexOf(" with ");
 //     const dash_idx = this.text.indexOf(" - "); //TODO: this not fully working sometimes
 //     end_idx = (dash_idx !== -1) ? dash_idx : with_idx;  //check for dash first since it's less common than with

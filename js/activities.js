@@ -12,7 +12,7 @@ function parseTweets(runkeeper_tweets) {
 	//Part 2: Determining activity type and distance
 	let activity_counts = {} //for storing diff types of activities & their counts
 	for(let i = 0; i < tweet_array.length; i++){
-		if (tweet_array[i].source === "completed_event"){ //completed events only
+		if (tweet_array[i].source === "completed_event" && tweet_array[i].activityType !== ""){ //completed events only (if activity type is listed as "activity" which becomes "" we don't include it)
 			if (!activity_counts[tweet_array[i].activityType]) {
 				activity_counts[tweet_array[i].activityType] = 1;
 			}
@@ -73,13 +73,9 @@ function parseTweets(runkeeper_tweets) {
 
 	//Part 2: Graphing activities by distance
 	//TODO: create a new array or manipulate tweet_array to create a graph of the number of tweets containing each type of activity.
-	
-	console.log(sorted_activities) //FIX: eliptical & eliptical workout listed - need to combine!!!!!
 	var activity_data = Object.entries(sorted_activities).map(([type, count]) => {
   		return { activity_type: type, count: count };
 	});
-	console.log(activity_data)
-
 	activity_vis_spec = { //TODO: Add mark and encoding
 		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
 		"description": "A graph of the number of Tweets containing each type of activity.",
@@ -95,7 +91,8 @@ function parseTweets(runkeeper_tweets) {
 				"field": "count",
 				"type": "quantitative",
 				"title": "Activity Count",
-				"scale": { "type": "linear" }, 
+				"scale": { "type": "log" }, 
+				"stack": null
 			},
 			"color": { 
 				"field": "activity_type",
@@ -108,6 +105,33 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
+	distances_vis_spec = {
+		// "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+		// "description": "A graph of the number of Tweets containing each type of activity.",
+		// "data": { "values": activity_data},
+		// "mark": "bar",
+		// "encoding": {
+		// 	"x": {
+		// 		"field": "activity_type",
+		// 		"type": "nominal",
+		// 		"title": "Activity Type"
+		// 	},
+		// 	"y": {
+		// 		"field": "count",
+		// 		"type": "quantitative",
+		// 		"title": "Activity Count",
+		// 		"scale": { "type": "log" }, 
+		// 		"stack": null
+		// 	},
+		// 	"color": { 
+		// 		"field": "activity_type",
+		// 		"type": "nominal",
+		// 		"legend": null
+		// 	}
+		// },
+	}
+	vegaEmbed('#distanceVis', distances_vis_spec, {actions:false});
+
 
 }
 
