@@ -57,7 +57,7 @@ function parseTweets(runkeeper_tweets) { //runkeeper_tweets = arr of raw tweet o
 	let written_count = 0;
 	for(let i = 0; i < tweet_array.length; i++) {
 		if (tweet_array[i].written) {
-			console.log(tweet_array[i].writtenText);
+			// console.log(tweet_array[i].writtenText);
 			written_count++;
 		}
 	}

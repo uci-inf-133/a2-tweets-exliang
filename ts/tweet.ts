@@ -39,13 +39,19 @@ class Tweet {
     //returns a boolean, whether the text includes any content written by the person tweeting.
     get written():boolean {
         //TODO: identify whether the tweet is written
-        this.text = this.text.replace(/https?:\/\/\S+/g, ''); //removes URLs
-		this.text = this.text.replace(/#Runkeeper/g, ''); //removes #Runkeeper
-        // ends with "Check it out!" or an auto hashtag #RunKeeper #RKLive #RKPodcast #FitnessAlerts #RunkeeperLive #RunKeeperApp
-        if (this.text.includes("Check it out!") || this.text.includes("#RunKeeper") || this.text.includes("#RKLive") || this.text.includes("#RKPodcast") || this.text.includes("#FitnessAlerts") || this.text.includes("#RunkeeperLive") || this.text.includes("#RunKeeperApp")) {
-            return false;
+
+        if (!this.text.includes("Check it out!")){ //not user written ("@RunKeeper" also means not user written but "-" means user written)
+            return true;
         }
-        return true;
+        return false;
+
+        // this.text = this.text.replace(/https?:\/\/\S+/g, ''); //removes URLs
+		// this.text = this.text.replace(/#Runkeeper/g, ''); //removes #Runkeeper
+        // // ends with "Check it out!" or an auto hashtag #RunKeeper #RKLive #RKPodcast #FitnessAlerts #RunkeeperLive #RunKeeperApp
+        // if (this.text.includes("Check it out!") || this.text.includes("#RunKeeper") || this.text.includes("#RKLive") || this.text.includes("#RKPodcast") || this.text.includes("#FitnessAlerts") || this.text.includes("#RunkeeperLive") || this.text.includes("#RunKeeperApp")) {
+        //     return false;
+        // }
+        // return true;
     }
 
     get writtenText():string {
@@ -54,10 +60,10 @@ class Tweet {
         }
         //TODO: parse the written text from the tweet 
         if (!this.text.includes(" - ")){ //handle tweets that are fully user written so there's no "-"
-            return this.text.trim()
+            return this.text
         }
 
-        var written_text = this.text.split(" - ")[1].trim(); //after the "-" is user written text
+        var written_text = this.text.split(" - ")[1]; //after the "-" is user written text
         return written_text;
     }
 
@@ -66,24 +72,6 @@ class Tweet {
             return "unknown";
         }
         //TODO: parse the activity type (running, skiing, biking, etc) from the text of the tweet for completed events only
-        // var activity_type = "";
-        // // Distance-based activities
-        // const distance_regex = /(?:completed|posted) a [\d.]+ (?:km|mi) (\w+)/i;
-        // const distance_match = this.text.match(distance_regex);
-        // if (distance_match) {
-        //     activity_type = distance_match[1].toLowerCase(); // capture the activity
-        //     return activity_type;
-        // }
-
-        // // Time-based activities
-        // const time_regex = /(?:completed|posted) (?:an|a) ([\w\s]+?) in /i;
-        // const time_match = this.text.match(time_regex);
-        // if (time_match) {
-        //     activity_type = time_match[1].trim().toLowerCase();
-        //     return activity_type;
-        // }
-
-        // return activity_type;
         let activity_type = "";
 
         // Match distance-based activities like "completed a 5 km run"
@@ -102,7 +90,6 @@ class Tweet {
         }
 
         // --- Normalization and cleaning ---
-
         // Remove filler suffixes (workout, session, activity, practice, exercise)
         activity_type = activity_type.replace(/\b(workout|session|activity|practice|exercise)\b/g, "").trim();
 
@@ -174,7 +161,12 @@ class Tweet {
 
     getHTMLTableRow(rowNumber:number):string {
         //TODO: return a table row which summarizes the tweet with a clickable link to the RunKeeper activity
-        return "<tr></tr>";
+        var tweet_with_link = this.text.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>');
+        return `<tr>
+                    <td>${rowNumber}</td>
+                    <td>${this.activityType}</td>
+                    <td>${tweet_with_link}</td>
+                </tr>`;
     }
 }
 
@@ -210,3 +202,23 @@ class Tweet {
 // }
 
 // return activity_type;
+
+//Old getACtivityType:
+      // var activity_type = "";
+        // // Distance-based activities
+        // const distance_regex = /(?:completed|posted) a [\d.]+ (?:km|mi) (\w+)/i;
+        // const distance_match = this.text.match(distance_regex);
+        // if (distance_match) {
+        //     activity_type = distance_match[1].toLowerCase(); // capture the activity
+        //     return activity_type;
+        // }
+
+        // // Time-based activities
+        // const time_regex = /(?:completed|posted) (?:an|a) ([\w\s]+?) in /i;
+        // const time_match = this.text.match(time_regex);
+        // if (time_match) {
+        //     activity_type = time_match[1].trim().toLowerCase();
+        //     return activity_type;
+        // }
+
+        // return activity_type;
