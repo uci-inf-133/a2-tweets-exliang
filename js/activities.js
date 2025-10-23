@@ -73,6 +73,7 @@ function parseTweets(runkeeper_tweets) {
 
 	//Part 2: Graphing activities by distance
 	//TODO: create a new array or manipulate tweet_array to create a graph of the number of tweets containing each type of activity.
+	//Note: activity types that aren't specified are not included in the plot
 	var activity_data = Object.entries(sorted_activities).map(([type, count]) => {
   		return { activity_type: type, count: count };
 	});
@@ -105,34 +106,110 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
-	distances_vis_spec = {
-		// "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-		// "description": "A graph of the number of Tweets containing each type of activity.",
-		// "data": { "values": activity_data},
-		// "mark": "bar",
-		// "encoding": {
-		// 	"x": {
-		// 		"field": "activity_type",
-		// 		"type": "nominal",
-		// 		"title": "Activity Type"
-		// 	},
-		// 	"y": {
-		// 		"field": "count",
-		// 		"type": "quantitative",
-		// 		"title": "Activity Count",
-		// 		"scale": { "type": "log" }, 
-		// 		"stack": null
-		// 	},
-		// 	"color": { 
-		// 		"field": "activity_type",
-		// 		"type": "nominal",
-		// 		"legend": null
-		// 	}
-		// },
+	
+	//make 1 dict: key = run, walk, bike, value = [lst of tuples -> (day,distance)]
+	const distances_by_activity = {};
+	top_3_activities.forEach(act => distances_by_activity[act] = []);
+
+	tweet_array.forEach(tweet => {
+		if (tweet.source === "completed_event" && top_3_activities.includes(tweet.activityType)) {
+			const rounded_distance = Math.round(tweet.distance * 100) / 100;
+    		const day = getDayOfWeek(tweet.time);
+			distances_by_activity[tweet.activityType].push([day, rounded_distance]);
+		}
+	});
+	// console.log(distances_by_activity)
+	
+	let vega_data = [];
+	top_3_activities.forEach(act => {
+		distances_by_activity[act].forEach(([day, distance]) => {
+			vega_data.push({
+				day_of_week: day,
+				distance: distance,
+				activity_type: act
+			});
+  		});
+	});
+	console.log(vega_data)
+
+	const distances_vis_spec = {
+		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+		"description": "A graph of all the distances for the top 3 activites by day of week.",
+		"data": { "values": vega_data},
+		"mark": {
+			"type": "point",
+			"size": 50,
+			"opacity": 0.7
+		},
+		"encoding": {
+			"x": {
+				"field": "day_of_week",
+				"type": "nominal",
+				"title": "Day of Week",
+				"sort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+				"axis": { "labelAngle": 0, "grid": true},
+			},
+			"y": {
+				"field": "distance",
+				"type": "quantitative",
+				"title": "Distance (mi)",
+				"scale": { "type": "linear" }, 
+			},
+			"color": { 
+				"field": "activity_type",
+				"type": "nominal",
+				"title": "Top 3 Activity Types"
+			},
+		},
 	}
-	vegaEmbed('#distanceVis', distances_vis_spec, {actions:false});
 
+	const distances_mean_vis_spec = {
+		$schema: "https://vega.github.io/schema/vega-lite/v5.json",
+		"description": "A graph of the all the mean distances for the top 3 activites by day of week.",
+		"data": { "values": vega_data},
+		"mark": {
+			"type": "point",
+		},
+		"encoding": {
+			"x": {
+				"field": "day_of_week",
+				"type": "nominal",
+				"title": "Day of Week",
+				"sort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+				"axis": { "labelAngle": 0, "grid": true},
+			},
+			"y": {
+				"aggregate": "mean",
+				"field": "distance",
+				"type": "quantitative",
+				"title": "Mean of Distances (mi)",
+				"scale": { "type": "linear" }, 
+			},
+			"color": { 
+				"field": "activity_type",
+				"type": "nominal",
+				"title": "Top 3 Activity Types"
+			},
+		},
+	}
+	
+	//button toggling b/w means & distances
+	let showing_aggregate = false;
+	document.getElementById("aggregate").addEventListener("click", () => {
+	showing_aggregate = !showing_aggregate;
 
+	if (showing_aggregate) {
+		document.getElementById("distanceVis").style.display = 'none';
+		document.getElementById("distanceVisAggregated").style.display = 'block';
+		document.getElementById("aggregate").textContent = "Show all distances";
+		vegaEmbed('#distanceVisAggregated', distances_mean_vis_spec, { actions: false });
+	} else {
+		document.getElementById("distanceVisAggregated").style.display = 'none';
+		document.getElementById("distanceVis").style.display = 'block';
+		document.getElementById("aggregate").textContent = "Show means";
+		vegaEmbed('#distanceVis', distances_vis_spec, { actions: false });
+	}
+	});
 }
 
 //Wait for the DOM to load
@@ -140,6 +217,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
 	loadSavedRunkeeperTweets().then(parseTweets);
 });
 
+function getDayOfWeek(date_str){
+	var date = new Date(date_str)
+	var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+	return days[date.getDay()]
+}
 
 //Part 2: determining distance
 // for(let i = 0; i < 100; i++) { //distance
