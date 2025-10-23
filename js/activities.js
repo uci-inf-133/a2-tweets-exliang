@@ -130,7 +130,7 @@ function parseTweets(runkeeper_tweets) {
 			});
   		});
 	});
-	console.log(vega_data)
+	// console.log(vega_data)
 
 	const distances_vis_spec = {
 		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",

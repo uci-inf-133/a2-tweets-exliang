@@ -53,7 +53,11 @@ class Tweet {
             return "";
         }
         //TODO: parse the written text from the tweet 
-        var written_text = this.text.split(" - ")[1]; //after the "-" is user written text
+        if (!this.text.includes(" - ")){ //handle tweets that are fully user written so there's no "-"
+            return this.text.trim()
+        }
+
+        var written_text = this.text.split(" - ")[1].trim(); //after the "-" is user written text
         return written_text;
     }
 
