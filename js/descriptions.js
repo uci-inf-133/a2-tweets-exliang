@@ -11,7 +11,7 @@ function parseTweets(runkeeper_tweets) {
 	tweet_array = runkeeper_tweets.map(function(tweet) {
 		return new Tweet(tweet.text, tweet.created_at);
 	});
-	written_tweets = tweet_array.filter(tweet => tweet.written);
+	written_tweets = tweet_array.filter(tweet => tweet.written && tweet.activityType !== "unknown"); //only for completed user-written events
 }
 
 function addEventHandlerForSearch() { //TODO: Search the written tweets as text is entered into the search box, and add them to the table
