@@ -10,16 +10,10 @@ class Tweet {
 	//returns either 'live_event', 'achievement', 'completed_event', or 'miscellaneous'
     get source():string {
         //TODO: identify whether the source is a live event, an achievement, a completed event, or miscellaneous.
-
         /* Part 1: Tweet Categories
         Live = person tweets while they're currently doing the acitivty ("#RKLive")
-        
         Achievement = person indicates an achivement they reached or a goal they set ("goal" or "Goal")
-        - Just completed a 8.65 mi run - Goal was 9. Oh well
-        - I just set a goal on #Runkeeper!
-
         Completed = person tweets acitvity they recently finished ("completed")
-
         Miscellaneous = anything that didn't involve posting abt an activity
         */
         if (this.text.includes("#RKLive")) {
@@ -39,19 +33,12 @@ class Tweet {
     //returns a boolean, whether the text includes any content written by the person tweeting.
     get written():boolean {
         //TODO: identify whether the tweet is written
-
-        if (!this.text.includes("Check it out!")){ //not user written ("@RunKeeper" also means not user written but "-" means user written)
+        var new_text = this.text.replace(/https?:\/\/\S+/g, ''); //removes URLs
+        new_text = new_text.replace(/#Runkeeper/g, ''); //removes #Runkeeper
+        if (!new_text.includes("Check it out!")){ //not user written ("@RunKeeper" also means not user written but "-" means user written)
             return true;
         }
         return false;
-
-        // this.text = this.text.replace(/https?:\/\/\S+/g, ''); //removes URLs
-		// this.text = this.text.replace(/#Runkeeper/g, ''); //removes #Runkeeper
-        // // ends with "Check it out!" or an auto hashtag #RunKeeper #RKLive #RKPodcast #FitnessAlerts #RunkeeperLive #RunKeeperApp
-        // if (this.text.includes("Check it out!") || this.text.includes("#RunKeeper") || this.text.includes("#RKLive") || this.text.includes("#RKPodcast") || this.text.includes("#FitnessAlerts") || this.text.includes("#RunkeeperLive") || this.text.includes("#RunKeeperApp")) {
-        //     return false;
-        // }
-        // return true;
     }
 
     get writtenText():string {
@@ -62,7 +49,6 @@ class Tweet {
         if (!this.text.includes(" - ")){ //handle tweets that are fully user written so there's no "-"
             return this.text
         }
-
         var written_text = this.text.split(" - ")[1]; //after the "-" is user written text
         return written_text;
     }
@@ -89,20 +75,18 @@ class Tweet {
             }
         }
 
-        // --- Normalization and cleaning ---
-        // Remove filler suffixes (workout, session, activity, practice, exercise)
+        //remove filler suffixes like workout, session, activity, practice, & exercise
         activity_type = activity_type.replace(/\b(workout|session|activity|practice|exercise)\b/g, "").trim();
 
-        // Replace multiple spaces with one
+        //replace multiple spaces with one
         activity_type = activity_type
-            .replace(/[®&]/g, "")          // remove symbols
-            .replace(/\s*\/\s*/g, " ")     // replace slashes with space
+            .replace(/[®&]/g, "")          //remove symbols
+            .replace(/\s*\/\s*/g, " ")     //replace slashes with space
             .replace(/\b(workout|session|activity|practice|exercise)\b/g, "")
             .replace(/\s{2,}/g, " ")
             .trim();
 
-        // Normalize specific known phrases and typos
-        const corrections: Record<string, string> = {
+        const corrections: Record<string, string> = {  //normalize specific known phrases and typos
             "elliptical": "elliptical workout",
             "mysports freestyle": "mysports freestyle",
             "mysports": "mysports freestyle", //for mysports freestyle which counts as both time & distance activities
@@ -130,8 +114,7 @@ class Tweet {
             "ski": "ski run",
         };
 
-        // Apply correction if exists
-        if (corrections[activity_type]) {
+        if (corrections[activity_type]) {  // apply correction if exists
             activity_type = corrections[activity_type];
         }
 
@@ -169,56 +152,3 @@ class Tweet {
                 </tr>`;
     }
 }
-
-//Old activityType code:
-// var start_idx = -1, end_idx = -1;
-
-// //time activities: get start & end idxs - either "a" or "an" for start & "in" for end
-// if (!this.text.includes(" km ") && !this.text.includes(" mi ")) {
-//     const a_idx = this.text.indexOf(" a ");
-//     const an_idx = this.text.indexOf(" an ");
-//     start_idx = (a_idx !== -1) ? a_idx+3 : an_idx+3;
-//     end_idx = this.text.indexOf(" in "); 
-// }
-
-// //distance activites: get start & end idxs - idx right after "km" or "mi" for start & "with" or "-" for end
-// else if (this.text.includes(" km ") || this.text.includes(" mi ")) {
-//     const km_idx = this.text.indexOf(" km ");
-//     const mi_idx = this.text.indexOf(" mi ");
-//     start_idx = (km_idx !== -1) ? km_idx+4 : mi_idx+4; //this +4 might be hardcoded
-//     const with_idx = this.text.indexOf(" with ");
-//     const dash_idx = this.text.indexOf(" - "); //TODO: this not fully working sometimes
-//     end_idx = (dash_idx !== -1) ? dash_idx : with_idx;  //check for dash first since it's less common than with
-// }
-
-// var activity_type = "";
-// if (start_idx !== -1 && end_idx !== -1) { //slice activity type from text
-//     if (!this.text.includes(" km ") && !this.text.includes(" mi ")) { //not km & mi activity
-//         activity_type = this.text.slice(start_idx, end_idx).trim()
-//     }
-//     else if (this.text.includes(" km ") || this.text.includes(" mi ")) { //km & mi activity
-//         activity_type = this.text.slice(start_idx, end_idx).trim()
-//     }
-// }
-
-// return activity_type;
-
-//Old getACtivityType:
-      // var activity_type = "";
-        // // Distance-based activities
-        // const distance_regex = /(?:completed|posted) a [\d.]+ (?:km|mi) (\w+)/i;
-        // const distance_match = this.text.match(distance_regex);
-        // if (distance_match) {
-        //     activity_type = distance_match[1].toLowerCase(); // capture the activity
-        //     return activity_type;
-        // }
-
-        // // Time-based activities
-        // const time_regex = /(?:completed|posted) (?:an|a) ([\w\s]+?) in /i;
-        // const time_match = this.text.match(time_regex);
-        // if (time_match) {
-        //     activity_type = time_match[1].trim().toLowerCase();
-        //     return activity_type;
-        // }
-
-        // return activity_type;

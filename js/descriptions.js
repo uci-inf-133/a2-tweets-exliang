@@ -11,7 +11,7 @@ function parseTweets(runkeeper_tweets) {
 	tweet_array = runkeeper_tweets.map(function(tweet) {
 		return new Tweet(tweet.text, tweet.created_at);
 	});
-	written_tweets = tweet_array.filter(tweet => tweet.written && tweet.activityType !== "unknown"); //only for completed user-written events
+	written_tweets = tweet_array.filter(tweet => tweet.written); //only for completed user-written events, including activityType of "unknown"
 }
 
 function addEventHandlerForSearch() { //TODO: Search the written tweets as text is entered into the search box, and add them to the table
@@ -53,26 +53,3 @@ document.addEventListener('DOMContentLoaded', function (event) {
 	addEventHandlerForSearch();
 	loadSavedRunkeeperTweets().then(parseTweets);
 });
-
-
-//testng user written texts
-	// for(var i = 0; i < tweet_array.length; i++){
-	// 	if(tweet_array[i].written && tweet_array[i].writtenText === undefined){
-	// 		console.log(tweet_array[i].text);
-	// 		console.log(tweet_array[i].writtenText);
-	// 	}
-	// }
-
-//testing written_tweets
-	// for(var i = 0; i < written_tweets.length; i++){
-	// 	if (written_tweets[i] === undefined){
-	// 		console.log(written_tweets[i])
-	// 	}
-	// }
-
-// for(var i = 0; i < tweet_array.length; i++){
-// 	if (tweet_array[i].written){
-// 		console.log(tweet_array[i].text)
-// 		console.log(tweet_array[i].writtenText)
-// 	}
-// }

@@ -30,27 +30,30 @@ function parseTweets(runkeeper_tweets) {
 	document.getElementById('thirdMost').innerHTML = top_3_activities[2];
 
 	//finding longest & shortest distance activities from the top 3 activities
-	var max_distance = 0, min_distance = 2 ** 53 - 1;
-	var max_activity = "", min_activity = "";
+	var distance_stats = {}
 	for(let i = 0; i < tweet_array.length; i++){
 		//completed events & distance activities only
 		if (tweet_array[i].source === "completed_event" && (tweet_array[i].text.includes(" km ") || tweet_array[i].text.includes(" mi "))){
 			var curr_distance = tweet_array[i].distance;
 			var curr_activity = tweet_array[i].activityType;
 			if (top_3_activities.includes(curr_activity)){ //only account for the top 3 activites
-				if (curr_distance > max_distance){
-					max_distance = curr_distance;
-					max_activity = curr_activity;
-				}
-				else if (curr_distance < min_distance){
-					min_distance = curr_distance;
-					min_activity = curr_activity;
-				}
+				if (!distance_stats[curr_activity]) {
+                	distance_stats[curr_activity] = {total: 0, count: 0};
+            	}
+				distance_stats[curr_activity].total += curr_distance;
+				distance_stats[curr_activity].count++;
 			}
 		}
 	}
-	document.getElementById('longestActivityType').innerHTML = max_activity;
-	document.getElementById('shortestActivityType').innerHTML = min_activity;
+	var means = Object.fromEntries(
+		Object.entries(distance_stats).map(([activity, stats]) => [activity, stats.total/stats.count])
+	);
+	var max_mean = Math.max(...Object.values(means));
+	var min_mean = Math.min(...Object.values(means));
+	var longest_activity = Object.keys(means).filter(a => means[a] === max_mean).join('/');
+	var shortest_activity = Object.keys(means).filter(a => means[a] === min_mean).join('/');
+	document.getElementById('longestActivityType').innerHTML = longest_activity;
+	document.getElementById('shortestActivityType').innerHTML = shortest_activity;
 
 	//finding the day the longest distance activity is on
 	var days_n_distances = {} //dict w (day,total distance) pair
@@ -75,7 +78,7 @@ function parseTweets(runkeeper_tweets) {
 	//TODO: create a new array or manipulate tweet_array to create a graph of the number of tweets containing each type of activity.
 	//Note: activity types that aren't specified are not included in the plot
 	var activity_data = Object.entries(sorted_activities).map(([type, count]) => {
-  		return { activity_type: type, count: count };
+  		return {activity_type: type, count: count};
 	});
 	activity_vis_spec = { //TODO: Add mark and encoding
 		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -118,7 +121,6 @@ function parseTweets(runkeeper_tweets) {
 			distances_by_activity[tweet.activityType].push([day, rounded_distance]);
 		}
 	});
-	// console.log(distances_by_activity)
 	
 	let vega_data = [];
 	top_3_activities.forEach(act => {
@@ -130,7 +132,6 @@ function parseTweets(runkeeper_tweets) {
 			});
   		});
 	});
-	// console.log(vega_data)
 
 	const distances_vis_spec = {
 		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -139,7 +140,7 @@ function parseTweets(runkeeper_tweets) {
 		"mark": {
 			"type": "point",
 			"size": 50,
-			"opacity": 0.7
+			"opacity": 0.4,
 		},
 		"encoding": {
 			"x": {
@@ -147,13 +148,13 @@ function parseTweets(runkeeper_tweets) {
 				"type": "nominal",
 				"title": "Day of Week",
 				"sort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-				"axis": { "labelAngle": 0, "grid": true},
+				"axis": {"labelAngle": 0, "grid": true},
 			},
 			"y": {
 				"field": "distance",
 				"type": "quantitative",
 				"title": "Distance (mi)",
-				"scale": { "type": "linear" }, 
+				"scale": {"type": "linear"}, 
 			},
 			"color": { 
 				"field": "activity_type",
@@ -222,64 +223,3 @@ function getDayOfWeek(date_str){
 	var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 	return days[date.getDay()]
 }
-
-//Part 2: determining distance
-// for(let i = 0; i < 100; i++) { //distance
-// 	if (tweet_array[i].text.includes("completed") || tweet_array[i].text.includes("posted")){ // || tweet_array[i].text.includes("posted")
-// 		if (tweet_array[i].distance > 0) { //only print if distance activity
-// 			console.log(tweet_array[i].text + " & " + tweet_array[i].distance);
-// 		}
-// 	}
-// }
-
-//Part 2: determining activity type
-// for(let i = 0; i < 8247; i++) { //activity type
-// 	if (tweet_array[i].text.includes("completed") || tweet_array[i].text.includes("posted")){ //completed events only
-// 		if(tweet_array[i].text.includes(" km ") || tweet_array[i].text.includes(" mi ")) { //km & mi types
-// 			if (tweet_array[i].activityType == "unknown"){ //TODO: why are there unknowns when it's fs completed events only? some events are achievements since thats checked before
-// 				console.log(tweet_array[i].text + " 😭 " + tweet_array[i].activityType); //tweet_array[i].text + " 😭 " +
-// 			} 
-// 		}
-// 		// if(!tweet_array[i].text.includes("km") && !tweet_array[i].text.includes("mi")) { //km & mi types
-// 		// 	console.log(tweet_array[i].activityType);
-// 		// }
-// 	}
-// }
-
-//TESTING for Part 2: Determining activity type and distance
-// for(let i = 0; i < 100; i++) {
-// 	console.log(tweet_array[i].text);
-// }
-
-//get the type of physical activity 
-// for(let i = 0; i < 100; i++) { //km or mi
-// 	console.log(tweet_array[i].text + " & " + tweet_array[i].activityType.toUpperCase());
-// }
-
-/*all cases:
-- Just posted a "MySports Freestyle" in 1:01:28  - TomTom MySports Watch https://t.co/tv6pKRfYRo #Runkeeper & JUST
-- Just posted a "spinning workout" in 1:00:00  with @Runkeeper. Check it out! https://t.co/BxDNWVU2rr #Runkeeper & JUST
-- Just posted a "meditation" in 21:00  with @Runkeeper
-
-- I just completed an activity with Runkeeper https://t.co/CpO35to5Oc (maybe need to make compeleted events exlcude this?)
-
-- Just posted a spinning workout in 45:00 VS Just posted a bike in 1:00:38 - take everyting from after idx "a" or "an" to before "in"
-- Just posted an activity in 1:44:59  with @Runkeeper. - just keep as "activity"
-*/
-
-// //CHECK: verify by creating a distances
-// let distances = [];
-
-// for (let tweet of tweet_array) {
-// 	if (tweet.source === "completed_event") {
-// 		let dist = tweet.distance; // assuming your distance getter works
-// 		if (dist > 0) distances.push(dist);
-// 	}
-// }
-
-// // Find max and min
-// let maxDistance = Math.max(...distances);
-// let minDistance = Math.min(...distances);
-
-// console.log("Max distance:", maxDistance);
-// console.log("Min distance:", minDistance);
